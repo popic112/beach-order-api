@@ -29,24 +29,32 @@ router.get("/menu", async (req, res) => {
  * 🟢 2. Adăugare produs în meniu
  * Endpoint: POST /dashboard/menu/add
  */
-router.post("/menu/add", async (req, res) => {
-  try {
-    const { business_id, name, description, price, type, visible, image } = req.body;
-    if (!business_id || !name || !price || !type) {
-      return res.status(400).json({ error: "Toate câmpurile sunt obligatorii." });
+ router.post("/menu/add", async (req, res) => {
+    console.log("🔹 POST /menu/add - Request Body:", req.body);
+  
+    try {
+      const { business_id, name, description, price, type, visible, image } = req.body;
+  
+      if (!business_id || !name || !price || !type) {
+        console.log("❌ Eroare: Lipsesc date obligatorii.");
+        return res.status(400).json({ error: "Toate câmpurile sunt obligatorii." });
+      }
+  
+      console.log("✅ Datele sunt valide. Inserăm în DB...");
+      const [result] = await pool.query(
+        "INSERT INTO menu (business_id, name, description, price, type, visible, image) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        [business_id, name, description, price, type, visible, image]
+      );
+  
+      console.log("✅ Inserare reușită. ID produs:", result.insertId);
+      res.json({ success: true, message: "Produs adăugat în meniu.", menu_item_id: result.insertId });
+  
+    } catch (error) {
+      console.error("❌ Eroare la adăugare produs:", error);
+      res.status(500).json({ error: "Eroare internă la server.", details: error.message });
     }
-
-    const [result] = await pool.query(
-      "INSERT INTO menu (business_id, name, description, price, type, visible, image) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      [business_id, name, description, price, type, visible, image]
-    );
-
-    res.json({ success: true, message: "Produs adăugat în meniu.", menu_item_id: result.insertId });
-  } catch (error) {
-    console.error("Eroare la adăugare produs:", error);
-    res.status(500).json({ error: "Eroare internă la server." });
-  }
-});
+  });
+  
 
 /**
  * 🟢 3. Editare produs în meniu
