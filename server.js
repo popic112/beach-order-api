@@ -32,3 +32,14 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
 });
+
+const pool = require("./config/db"); // Importă conexiunea DB
+
+pool.query("SELECT 1", (err, results) => {
+    if (err) {
+        console.error("❌ Conexiunea la DB a eșuat:", err);
+    } else {
+        console.log("✅ Conectat la DB!");
+    }
+});
+
