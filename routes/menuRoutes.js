@@ -99,24 +99,41 @@ router.delete("/menu/delete", async (req, res) => {
 });
 
 /**
- * 🟢 5. Toggle vizibilitate produs
- * Endpoint: PUT /dashboard/menu/toggle-visibility
+ * 🟢 5. Ștergere toate produsele dintr-un business
+ * Endpoint: DELETE /dashboard/menu/delete-all
  */
-router.put("/menu/toggle-visibility", async (req, res) => {
+router.delete("/menu/delete-all", async (req, res) => {
   try {
-    const { menu_item_id, visible } = req.body;
-    if (!menu_item_id) {
-      return res.status(400).json({ error: "menu_item_id este obligatoriu." });
+    const { business_id } = req.body;
+    if (!business_id) {
+      return res.status(400).json({ error: "business_id este obligatoriu." });
     }
 
-    const [result] = await pool.query("UPDATE menu SET visible = ? WHERE id = ?", [visible, menu_item_id]);
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: "Produsul nu a fost găsit." });
-    }
-
-    res.json({ success: true, message: visible ? "Produsul este acum vizibil." : "Produsul a fost suspendat." });
+    const [result] = await pool.query("DELETE FROM menu WHERE business_id = ?", [business_id]);
+    res.json({ success: true, message: `${result.affectedRows} produse au fost șterse.` });
   } catch (error) {
-    console.error("Eroare la toggle vizibilitate:", error);
+    console.error("Eroare la ștergerea produselor:", error);
+    res.status(500).json({ error: "Eroare internă la server." });
+  }
+});
+
+/**
+ * 🟢 6. Ștergere produse selectate
+ * Endpoint: DELETE /dashboard/menu/delete-select
+ */
+router.delete("/menu/delete-select", async (req, res) => {
+  try {
+    const { menu_item_ids } = req.body;
+    if (!Array.isArray(menu_item_ids) || menu_item_ids.length === 0) {
+      return res.status(400).json({ error: "Trebuie să trimiți un array cu ID-uri valide." });
+    }
+
+    const placeholders = menu_item_ids.map(() => "?").join(", ");
+    const [result] = await pool.query(`DELETE FROM menu WHERE id IN (${placeholders})`, menu_item_ids);
+
+    res.json({ success: true, message: `${result.affectedRows} produse au fost șterse.` });
+  } catch (error) {
+    console.error("Eroare la ștergerea produselor selectate:", error);
     res.status(500).json({ error: "Eroare internă la server." });
   }
 });
