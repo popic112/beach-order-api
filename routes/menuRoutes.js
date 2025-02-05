@@ -29,62 +29,24 @@ router.get("/menu", async (req, res) => {
  * 🟢 2. Adăugare produs în meniu
  * Endpoint: POST /dashboard/menu/add
  */
- router.post("/menu/add", async (req, res) => {
-    console.log("🔹 POST /menu/add - Request Body:", req.body);
-  
-    try {
-      const { business_id, name, description, price, type, visible, image } = req.body;
-  
-      if (!business_id || !name || !price || !type) {
-        console.log("❌ Eroare: Lipsesc date obligatorii.");
-        return res.status(400).json({ error: "Toate câmpurile sunt obligatorii." });
-      }
-  
-      console.log("✅ Datele sunt valide. Inserăm în DB...");
-      const [result] = await pool.query(
-        "INSERT INTO menu (business_id, name, description, price, type, visible, image) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        [business_id, name, description, price, type, visible, image]
-      );
-  
-      console.log("✅ Inserare reușită. ID produs:", result.insertId);
-      res.json({ success: true, message: "Produs adăugat în meniu.", menu_item_id: result.insertId });
-  
-    } catch (error) {
-      console.error("❌ Eroare la adăugare produs:", error);
-      res.status(500).json({ error: "Eroare internă la server.", details: error.message });
+router.post("/menu/add", async (req, res) => {
+  try {
+    const { business_id, name, description, price, type, visible, image } = req.body;
+    if (!business_id || !name || !price || !type) {
+      return res.status(400).json({ error: "Toate câmpurile sunt obligatorii." });
     }
-  });
 
-  router.delete("/menu/delete-multiple", async (req, res) => {
-    console.log("🔹 DELETE /menu/delete-multiple - Request Body:", req.body);
-  
-    try {
-      const { menu_item_ids } = req.body;
-  
-      if (!Array.isArray(menu_item_ids) || menu_item_ids.length === 0) {
-        return res.status(400).json({ error: "Trebuie să trimiți un array cu ID-uri valide." });
-      }
-  
-      const placeholders = menu_item_ids.map(() => "?").join(", ");
-      const query = `DELETE FROM menu WHERE id IN (${placeholders})`;
-  
-      const [result] = await pool.query(query, menu_item_ids);
-  
-      if (result.affectedRows === 0) {
-        return res.status(404).json({ error: "Niciun produs nu a fost găsit pentru ștergere." });
-      }
-  
-      res.json({
-        success: true,
-        message: `${result.affectedRows} produse au fost șterse.`,
-      });
-  
-    } catch (error) {
-      console.error("❌ Eroare la ștergerea produselor:", error);
-      res.status(500).json({ error: "Eroare internă la server.", details: error.message });
-    }
-  });
-  
+    const [result] = await pool.query(
+      "INSERT INTO menu (business_id, name, description, price, type, visible, image) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      [business_id, name, description, price, type, visible, image]
+    );
+
+    res.json({ success: true, message: "Produs adăugat în meniu.", menu_item_id: result.insertId });
+  } catch (error) {
+    console.error("Eroare la adăugare produs:", error);
+    res.status(500).json({ error: "Eroare internă la server." });
+  }
+});
 
 /**
  * 🟢 3. Editare produs în meniu
@@ -97,10 +59,14 @@ router.put("/menu/update", async (req, res) => {
       return res.status(400).json({ error: "menu_item_id este obligatoriu." });
     }
 
-    await pool.query(
+    const [result] = await pool.query(
       "UPDATE menu SET name = ?, description = ?, price = ?, visible = ? WHERE id = ?",
       [name, description, price, visible, menu_item_id]
     );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Produsul nu a fost găsit." });
+    }
 
     res.json({ success: true, message: "Produsul a fost actualizat." });
   } catch (error) {
@@ -120,7 +86,11 @@ router.delete("/menu/delete", async (req, res) => {
       return res.status(400).json({ error: "menu_item_id este obligatoriu." });
     }
 
-    await pool.query("DELETE FROM menu WHERE id = ?", [menu_item_id]);
+    const [result] = await pool.query("DELETE FROM menu WHERE id = ?", [menu_item_id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Produsul nu a fost găsit." });
+    }
+
     res.json({ success: true, message: "Produsul a fost șters." });
   } catch (error) {
     console.error("Eroare la ștergerea produsului:", error);
@@ -139,7 +109,11 @@ router.put("/menu/toggle-visibility", async (req, res) => {
       return res.status(400).json({ error: "menu_item_id este obligatoriu." });
     }
 
-    await pool.query("UPDATE menu SET visible = ? WHERE id = ?", [visible, menu_item_id]);
+    const [result] = await pool.query("UPDATE menu SET visible = ? WHERE id = ?", [visible, menu_item_id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Produsul nu a fost găsit." });
+    }
+
     res.json({ success: true, message: visible ? "Produsul este acum vizibil." : "Produsul a fost suspendat." });
   } catch (error) {
     console.error("Eroare la toggle vizibilitate:", error);
