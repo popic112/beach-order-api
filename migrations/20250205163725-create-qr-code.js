@@ -1,34 +1,30 @@
-'use strict';
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable('qr_codes', {
-      id: {
-        allowNull: false,
-        autoIncrement: true,
-        primaryKey: true,
-        type: Sequelize.INTEGER
+    await queryInterface.addColumn("qr_codes", "business_id", {
+      type: Sequelize.INTEGER,
+      allowNull: false,
+    });
+
+    await queryInterface.addColumn("qr_codes", "umbrella_number", {
+      type: Sequelize.INTEGER,
+      allowNull: true,
+    });
+
+    await queryInterface.addConstraint("qr_codes", {
+      fields: ["business_id"],
+      type: "foreign key",
+      name: "fk_qr_codes_business",
+      references: {
+        table: "businesses",
+        field: "id",
       },
-      business_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false
-      },
-      umbrella_number: {
-        type: Sequelize.INTEGER,
-        allowNull: true
-      },
-      qr_code: {
-        type: Sequelize.STRING,
-        allowNull: false,
-        unique: true
-      },
-      created_at: {
-        allowNull: false,
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
-      }
+      onDelete: "CASCADE",
     });
   },
+
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('qr_codes');
-  }
+    await queryInterface.removeConstraint("qr_codes", "fk_qr_codes_business");
+    await queryInterface.removeColumn("qr_codes", "business_id");
+    await queryInterface.removeColumn("qr_codes", "umbrella_number");
+  },
 };
