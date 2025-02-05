@@ -67,7 +67,7 @@ router.get("/list", async (req, res) => {
 });
 
 /**
- * 🟢 3. Editare QR Code pentru a adăuga numărul umbrelei (verificare unicitate)
+ * 🟢 3. Editare QR Code pentru a adăuga numărul umbrelei (verificare unicitate, acceptă litere și cifre)
  * Endpoint: PUT /api/qrcodes/update
  */
 router.put("/update", async (req, res) => {
@@ -75,7 +75,7 @@ router.put("/update", async (req, res) => {
 
   try {
     const { qr_code_id, umbrella_number } = req.body;
-    if (!qr_code_id || umbrella_number === undefined) {
+    if (!qr_code_id || !umbrella_number) {
       return res.status(400).json({ error: "qr_code_id și umbrella_number sunt obligatorii." });
     }
 
