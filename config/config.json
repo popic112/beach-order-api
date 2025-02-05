@@ -1,0 +1,24 @@
+{
+    "development": {
+      "username": "admin",
+      "password": "damiANdrei23!",
+      "database": "tabo-orders",
+      "host": "tabo-orders.cowhfmtnvgin.eu-central-1.rds.amazonaws.com",
+      "dialect": "mariadb"
+    },
+    "test": {
+      "username": "admin",
+      "password": "damiANdrei23!",
+      "database": "tabo-orders_test",
+      "host": "tabo-orders.cowhfmtnvgin.eu-central-1.rds.amazonaws.com",
+      "dialect": "mariadb"
+    },
+    "production": {
+      "username": "admin",
+      "password": "damiANdrei23!",
+      "database": "tabo-orders",
+      "host": "tabo-orders.cowhfmtnvgin.eu-central-1.rds.amazonaws.com",
+      "dialect": "mariadb"
+    }
+  }
+  
