@@ -17,6 +17,13 @@ app.get("/", (req, res) => {
 
 // 🔗 Conectăm rutele API
 app.use("/api/qrcodes", qrRoutes);
+console.log("✅ Rutele încărcate:");
+app._router.stack.forEach((middleware) => {
+  if (middleware.route) {
+    console.log(`- ${middleware.route.stack[0].method.toUpperCase()} ${middleware.route.path}`);
+  }
+});
+
 // app.use("/api/orders", orderRoutes);
 // app.use("/api/users", userRoutes);
 
