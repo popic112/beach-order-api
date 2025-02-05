@@ -54,6 +54,36 @@ router.get("/menu", async (req, res) => {
       res.status(500).json({ error: "Eroare internă la server.", details: error.message });
     }
   });
+
+  router.delete("/menu/delete-multiple", async (req, res) => {
+    console.log("🔹 DELETE /menu/delete-multiple - Request Body:", req.body);
+  
+    try {
+      const { menu_item_ids } = req.body;
+  
+      if (!Array.isArray(menu_item_ids) || menu_item_ids.length === 0) {
+        return res.status(400).json({ error: "Trebuie să trimiți un array cu ID-uri valide." });
+      }
+  
+      const placeholders = menu_item_ids.map(() => "?").join(", ");
+      const query = `DELETE FROM menu WHERE id IN (${placeholders})`;
+  
+      const [result] = await pool.query(query, menu_item_ids);
+  
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ error: "Niciun produs nu a fost găsit pentru ștergere." });
+      }
+  
+      res.json({
+        success: true,
+        message: `${result.affectedRows} produse au fost șterse.`,
+      });
+  
+    } catch (error) {
+      console.error("❌ Eroare la ștergerea produselor:", error);
+      res.status(500).json({ error: "Eroare internă la server.", details: error.message });
+    }
+  });
   
 
 /**
