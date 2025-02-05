@@ -1,9 +1,9 @@
 require("dotenv").config({ path: "./.env" });
-const pool = require("./config/db"); // ← Mutat la început!
+const pool = require("./config/db");
 const express = require("express");
 const cors = require("cors");
 
-const qrRoutes = require("./routes/qrRoutes");
+const qrRoutes = require("./routes/qrRoutes"); // ✅ Import corect
 
 const app = express();
 app.use(express.json());
@@ -13,7 +13,7 @@ app.get("/", (req, res) => {
   res.send("Beach Order API Running! 🚀");
 });
 
-app.use("/api/qrcodes", qrRoutes);
+app.use("/api/qrcodes", qrRoutes); // ✅ Activează API-ul doar pentru GET QR Codes
 
 const PORT = process.env.PORT || 4000;
 console.log("📡 Rute disponibile:");
