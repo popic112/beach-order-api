@@ -4,8 +4,10 @@ const express = require("express");
 const cors = require("cors");
 
 const qrRoutes = require("./routes/qrRoutes");
+const menuRoutes = require("./routes/menuRoutes");
 
 const app = express();
+
 app.use(express.json());
 app.use(cors());
 
@@ -15,6 +17,9 @@ app.get("/", (req, res) => {
 
 // 🔗 Înregistrăm toate rutele pentru QR Codes
 app.use("/api/qrcodes", qrRoutes);
+
+// 🔗 Înregistrăm toate rutele pentru meniu
+app.use("/dashboard", menuRoutes);
 
 const PORT = process.env.PORT || 4000;
 
