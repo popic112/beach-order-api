@@ -1,9 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const { QrCode } = require("../models"); // Import modelul Sequelize
+const pool = require("../config/db");
 const { v4: uuidv4 } = require("uuid");
 
-// Endpoint pentru generare QR Codes
 router.post("/generate-qr", async (req, res) => {
   try {
     const { numCodes, business_id } = req.body;
@@ -13,13 +12,11 @@ router.post("/generate-qr", async (req, res) => {
 
     let qrCodes = [];
     for (let i = 0; i < numCodes; i++) {
-      const qrCode = uuidv4(); // Generăm un UUID
-      const newQr = await QrCode.create({
-        business_id,
-        umbrella_number: null,
-        qr_code: qrCode
-      });
-      qrCodes.push(newQr.qr_code);
+      const qrCode = uuidv4();
+      await pool.query("INSERT INTO qr_codes (business_id, umbrella_number, qr_code) VALUES (?, NULL, ?)", 
+        [business_id, qrCode]);
+
+      qrCodes.push(qrCode);
     }
 
     res.json({ success: true, qrCodes });
