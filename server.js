@@ -16,6 +16,13 @@ app.get("/", (req, res) => {
 app.use("/api/qrcodes", qrRoutes);
 
 const PORT = process.env.PORT || 4000;
+console.log("📡 Rute disponibile:");
+app._router.stack.forEach((r) => {
+  if (r.route && r.route.path) {
+    console.log(`➡️  ${r.route.stack[0].method.toUpperCase()} ${r.route.path}`);
+  }
+});
+
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
 });
