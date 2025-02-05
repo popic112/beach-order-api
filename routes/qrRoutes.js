@@ -17,7 +17,7 @@ router.post("/generate-qr", async (req, res) => {
     }
 
     let qrCodes = [];
-    const connection = await pool.getConnection(); // ✅ Creăm conexiunea
+    const connection = await pool.getConnection();
     try {
       for (let i = 0; i < numCodes; i++) {
         const qrCode = uuidv4();
@@ -29,7 +29,7 @@ router.post("/generate-qr", async (req, res) => {
       }
       res.json({ success: true, qrCodes });
     } finally {
-      connection.release(); // ✅ Închidem conexiunea
+      connection.release();
     }
   } catch (error) {
     console.error("❌ Eroare la generarea QR Codes:", error);
@@ -50,7 +50,7 @@ router.get("/list", async (req, res) => {
       return res.status(400).json({ error: "business_id este obligatoriu." });
     }
 
-    const connection = await pool.getConnection(); // ✅ Creăm conexiunea
+    const connection = await pool.getConnection();
     try {
       const [qrCodes] = await connection.query(
         "SELECT id, qr_code, umbrella_number FROM qr_codes WHERE business_id = ?",
@@ -58,7 +58,7 @@ router.get("/list", async (req, res) => {
       );
       res.json({ business_id, qr_codes: qrCodes });
     } finally {
-      connection.release(); // ✅ Închidem conexiunea
+      connection.release();
     }
   } catch (error) {
     console.error("❌ Eroare la obținerea QR Codes:", error);
@@ -67,7 +67,7 @@ router.get("/list", async (req, res) => {
 });
 
 /**
- * 🟢 3. Editare QR Code pentru a adăuga numărul umbrelei
+ * 🟢 3. Editare QR Code pentru a adăuga numărul umbrelei (verificare unicitate)
  * Endpoint: PUT /api/qrcodes/update
  */
 router.put("/update", async (req, res) => {
@@ -81,6 +81,16 @@ router.put("/update", async (req, res) => {
 
     const connection = await pool.getConnection();
     try {
+      // Verificăm dacă numărul umbrelei există deja
+      const [existing] = await connection.query(
+        "SELECT id FROM qr_codes WHERE umbrella_number = ? AND id != ?",
+        [umbrella_number, qr_code_id]
+      );
+      
+      if (existing.length > 0) {
+        return res.status(400).json({ error: "Numărul umbrelei este deja utilizat." });
+      }
+
       const [result] = await connection.query(
         "UPDATE qr_codes SET umbrella_number = ? WHERE id = ?",
         [umbrella_number, qr_code_id]
