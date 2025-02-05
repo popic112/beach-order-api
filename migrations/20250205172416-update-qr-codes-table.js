@@ -1,22 +1,33 @@
 'use strict';
 
-/** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up (queryInterface, Sequelize) {
-    /**
-     * Add altering commands here.
-     *
-     * Example:
-     * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
-     */
+  up: async (queryInterface, Sequelize) => {
+    await queryInterface.addColumn('qr_codes', 'business_id', {
+      type: Sequelize.INTEGER,
+      allowNull: false,
+    });
+
+    await queryInterface.addColumn('qr_codes', 'umbrella_number', {
+      type: Sequelize.INTEGER,
+      allowNull: true, // poate fi NULL la început
+    });
+
+    await queryInterface.addConstraint('qr_codes', {
+      fields: ['business_id'],
+      type: 'foreign key',
+      name: 'fk_qr_codes_business',
+      references: {
+        table: 'businesses',
+        field: 'id',
+      },
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
+    });
   },
 
-  async down (queryInterface, Sequelize) {
-    /**
-     * Add reverting commands here.
-     *
-     * Example:
-     * await queryInterface.dropTable('users');
-     */
-  }
+  down: async (queryInterface, Sequelize) => {
+    await queryInterface.removeConstraint('qr_codes', 'fk_qr_codes_business');
+    await queryInterface.removeColumn('qr_codes', 'business_id');
+    await queryInterface.removeColumn('qr_codes', 'umbrella_number');
+  },
 };
