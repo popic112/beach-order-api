@@ -15,6 +15,7 @@ const ensureBusinessExists = async (business_id) => {
 
 /**
  * 🟢 1. Obținerea setărilor meniului
+ * Endpoint: GET /dashboard/menu-setup
  */
 router.get("/", async (req, res) => {
     try {
@@ -28,7 +29,6 @@ router.get("/", async (req, res) => {
             return res.status(404).json({ error: "Setările meniului nu au fost găsite." });
         }
 
-        // Convertim coordonatele JSON în obiect
         const parsedSettings = settings[0];
         parsedSettings.coordinates = parsedSettings.coordinates ? JSON.parse(parsedSettings.coordinates) : [];
 
@@ -41,8 +41,9 @@ router.get("/", async (req, res) => {
 
 /**
  * 🟢 2. Setarea coordonatelor locației
+ * Endpoint: PUT /dashboard/menu-setup/set-coordinates
  */
-router.post("/set-coordinates", async (req, res) => {
+router.put("/set-coordinates", async (req, res) => {
     try {
         const { business_id, coordinates } = req.body;
 
@@ -51,18 +52,13 @@ router.post("/set-coordinates", async (req, res) => {
         }
 
         await ensureBusinessExists(business_id);
-
         const coordinatesJson = JSON.stringify(coordinates);
+
         const [updateResult] = await pool.query(
             "UPDATE menu_setup SET coordinates = ? WHERE business_id = ?",
             [coordinatesJson, business_id]
         );
 
-        if (updateResult.affectedRows === 0) {
-            return res.status(500).json({ error: "UPDATE a eșuat, nicio linie afectată." });
-        }
-
-        console.log("✅ Coordonate salvate:", coordinatesJson);
         res.json({ success: true, message: "Coordonatele locației au fost salvate." });
     } catch (error) {
         console.error("❌ Eroare la setarea coordonatelor:", error);
@@ -72,6 +68,7 @@ router.post("/set-coordinates", async (req, res) => {
 
 /**
  * 🟢 3. Actualizarea intervalelor orare
+ * Endpoint: PUT /dashboard/menu-setup/set-hours
  */
 router.put("/set-hours", async (req, res) => {
     try {
@@ -83,16 +80,11 @@ router.put("/set-hours", async (req, res) => {
 
         await ensureBusinessExists(business_id);
 
-        const [updateResult] = await pool.query(
+        await pool.query(
             "UPDATE menu_setup SET bar_open = ?, bar_close = ?, kitchen_open = ?, kitchen_close = ? WHERE business_id = ?",
             [bar_open, bar_close, kitchen_open, kitchen_close, business_id]
         );
 
-        if (updateResult.affectedRows === 0) {
-            return res.status(500).json({ error: "UPDATE a eșuat, nicio linie afectată." });
-        }
-
-        console.log(`✅ Interval orar actualizat pentru business_id=${business_id}`);
         res.json({ success: true, message: "Intervalele orare au fost actualizate." });
     } catch (error) {
         console.error("❌ Eroare la actualizarea intervalelor orare:", error);
@@ -102,6 +94,7 @@ router.put("/set-hours", async (req, res) => {
 
 /**
  * 🟢 4. Setarea modului de primire a comenzilor
+ * Endpoint: PUT /dashboard/menu-setup/set-order-mode
  */
 router.put("/set-order-mode", async (req, res) => {
     try {
@@ -113,16 +106,11 @@ router.put("/set-order-mode", async (req, res) => {
 
         await ensureBusinessExists(business_id);
 
-        const [updateResult] = await pool.query(
+        await pool.query(
             "UPDATE menu_setup SET receive_orders_together = ? WHERE business_id = ?",
             [receive_orders_together, business_id]
         );
 
-        if (updateResult.affectedRows === 0) {
-            return res.status(500).json({ error: "UPDATE a eșuat, nicio linie afectată." });
-        }
-
-        console.log(`✅ Modul de primire a comenzilor actualizat pentru business_id=${business_id}`);
         res.json({ success: true, message: "Modul de primire a comenzilor a fost actualizat." });
     } catch (error) {
         console.error("❌ Eroare la setarea modului de primire a comenzilor:", error);
@@ -132,6 +120,7 @@ router.put("/set-order-mode", async (req, res) => {
 
 /**
  * 🟢 5. Setarea confirmării comenzilor
+ * Endpoint: PUT /dashboard/menu-setup/set-confirmation
  */
 router.put("/set-confirmation", async (req, res) => {
     try {
@@ -152,6 +141,7 @@ router.put("/set-confirmation", async (req, res) => {
 
 /**
  * 🟢 6. Suspendarea comenzilor online
+ * Endpoint: PUT /dashboard/menu-setup/suspend-orders
  */
 router.put("/suspend-orders", async (req, res) => {
     try {
