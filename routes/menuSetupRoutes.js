@@ -3,30 +3,6 @@ const router = express.Router();
 const pool = require("../config/db");
 
 /**
- * 🟢 API pentru inițializarea setup-ului meniului
- * Verifică dacă business_id există, altfel îl creează
- */
-router.post("/initialize", async (req, res) => {
-    try {
-        const { business_id } = req.body;
-        if (!business_id) {
-            return res.status(400).json({ error: "business_id este obligatoriu." });
-        }
-
-        const [rows] = await pool.query("SELECT business_id FROM menu_setup WHERE business_id = ?", [business_id]);
-        if (rows.length === 0) {
-            await pool.query("INSERT INTO menu_setup (business_id) VALUES (?)", [business_id]);
-            console.log(`✅ Inserat business_id = ${business_id} în menu_setup`);
-        }
-
-        res.json({ success: true, message: "Setup-ul meniului este inițializat." });
-    } catch (error) {
-        console.error("❌ Eroare la inițializarea setup-ului meniului:", error);
-        res.status(500).json({ error: "Eroare internă la server." });
-    }
-});
-
-/**
  * 🟢 Funcție pentru a verifica și insera `business_id` dacă nu există
  */
 const ensureBusinessExists = async (business_id) => {
@@ -90,6 +66,106 @@ router.post("/set-coordinates", async (req, res) => {
         res.json({ success: true, message: "Coordonatele locației au fost salvate." });
     } catch (error) {
         console.error("❌ Eroare la setarea coordonatelor:", error);
+        res.status(500).json({ error: "Eroare internă la server." });
+    }
+});
+
+/**
+ * 🟢 3. Actualizarea intervalelor orare
+ */
+router.put("/set-hours", async (req, res) => {
+    try {
+        const { business_id, bar_open, bar_close, kitchen_open, kitchen_close } = req.body;
+
+        if (!business_id) {
+            return res.status(400).json({ error: "business_id este obligatoriu." });
+        }
+
+        await ensureBusinessExists(business_id);
+
+        const [updateResult] = await pool.query(
+            "UPDATE menu_setup SET bar_open = ?, bar_close = ?, kitchen_open = ?, kitchen_close = ? WHERE business_id = ?",
+            [bar_open, bar_close, kitchen_open, kitchen_close, business_id]
+        );
+
+        if (updateResult.affectedRows === 0) {
+            return res.status(500).json({ error: "UPDATE a eșuat, nicio linie afectată." });
+        }
+
+        console.log(`✅ Interval orar actualizat pentru business_id=${business_id}`);
+        res.json({ success: true, message: "Intervalele orare au fost actualizate." });
+    } catch (error) {
+        console.error("❌ Eroare la actualizarea intervalelor orare:", error);
+        res.status(500).json({ error: "Eroare internă la server." });
+    }
+});
+
+/**
+ * 🟢 4. Setarea modului de primire a comenzilor
+ */
+router.put("/set-order-mode", async (req, res) => {
+    try {
+        const { business_id, receive_orders_together } = req.body;
+
+        if (!business_id) {
+            return res.status(400).json({ error: "business_id este obligatoriu." });
+        }
+
+        await ensureBusinessExists(business_id);
+
+        const [updateResult] = await pool.query(
+            "UPDATE menu_setup SET receive_orders_together = ? WHERE business_id = ?",
+            [receive_orders_together, business_id]
+        );
+
+        if (updateResult.affectedRows === 0) {
+            return res.status(500).json({ error: "UPDATE a eșuat, nicio linie afectată." });
+        }
+
+        console.log(`✅ Modul de primire a comenzilor actualizat pentru business_id=${business_id}`);
+        res.json({ success: true, message: "Modul de primire a comenzilor a fost actualizat." });
+    } catch (error) {
+        console.error("❌ Eroare la setarea modului de primire a comenzilor:", error);
+        res.status(500).json({ error: "Eroare internă la server." });
+    }
+});
+
+/**
+ * 🟢 5. Setarea confirmării comenzilor
+ */
+router.put("/set-confirmation", async (req, res) => {
+    try {
+        const { business_id, confirm_orders } = req.body;
+        if (!business_id) {
+            return res.status(400).json({ error: "business_id este obligatoriu." });
+        }
+
+        await ensureBusinessExists(business_id);
+
+        await pool.query("UPDATE menu_setup SET confirm_orders = ? WHERE business_id = ?", [confirm_orders, business_id]);
+        res.json({ success: true, message: "Confirmarea comenzilor a fost activată." });
+    } catch (error) {
+        console.error("❌ Eroare la setarea confirmării comenzilor:", error);
+        res.status(500).json({ error: "Eroare internă la server." });
+    }
+});
+
+/**
+ * 🟢 6. Suspendarea comenzilor online
+ */
+router.put("/suspend-orders", async (req, res) => {
+    try {
+        const { business_id, suspend_online_orders } = req.body;
+        if (!business_id) {
+            return res.status(400).json({ error: "business_id este obligatoriu." });
+        }
+
+        await ensureBusinessExists(business_id);
+
+        await pool.query("UPDATE menu_setup SET suspend_online_orders = ? WHERE business_id = ?", [suspend_online_orders, business_id]);
+        res.json({ success: true, message: "Comenzile online au fost suspendate temporar." });
+    } catch (error) {
+        console.error("❌ Eroare la suspendarea comenzilor online:", error);
         res.status(500).json({ error: "Eroare internă la server." });
     }
 });
