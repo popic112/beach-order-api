@@ -3,8 +3,7 @@ const router = express.Router();
 const pool = require("../config/db");
 
 /**
- * 🟢 Verifică dacă business_id există deja în menu_setup
- * Dacă nu există, îl creează automat înainte de UPDATE.
+ * 🟢 Funcție pentru a verifica și insera `business_id` dacă nu există
  */
 const ensureBusinessExists = async (business_id) => {
   const [existing] = await pool.query(
@@ -35,7 +34,6 @@ router.get("/", async (req, res) => {
       return res.status(404).json({ error: "Setările meniului nu au fost găsite." });
     }
 
-    // Parsăm coordonatele JSON
     const parsedSettings = settings[0];
     parsedSettings.coordinates = parsedSettings.coordinates ? JSON.parse(parsedSettings.coordinates) : [];
 
@@ -52,11 +50,12 @@ router.get("/", async (req, res) => {
 router.post("/set-coordinates", async (req, res) => {
   try {
     const { business_id, coordinates } = req.body;
+
     if (!business_id || !coordinates || !Array.isArray(coordinates)) {
       return res.status(400).json({ error: "Date invalide." });
     }
 
-    await ensureBusinessExists(business_id); // Verificăm dacă business_id există
+    await ensureBusinessExists(business_id);
 
     const coordinatesJson = JSON.stringify(coordinates);
 
