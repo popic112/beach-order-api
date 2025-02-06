@@ -6,7 +6,7 @@ const pool = require("../config/db");
  * 🟢 1. Obținerea setărilor meniului
  * Endpoint: GET /dashboard/menu-setup
  */
-router.get("/menu-setup", async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const { business_id } = req.query;
     if (!business_id) {
@@ -18,7 +18,11 @@ router.get("/menu-setup", async (req, res) => {
       return res.status(404).json({ error: "Setările meniului nu au fost găsite." });
     }
 
-    res.json(settings[0]);
+    // Parsăm coordonatele JSON
+    const parsedSettings = settings[0];
+    parsedSettings.coordinates = parsedSettings.coordinates ? JSON.parse(parsedSettings.coordinates) : [];
+
+    res.json(parsedSettings);
   } catch (error) {
     console.error("❌ Eroare la obținerea setărilor meniului:", error);
     res.status(500).json({ error: "Eroare internă la server." });
@@ -29,19 +33,20 @@ router.get("/menu-setup", async (req, res) => {
  * 🟢 2. Setarea coordonatelor locației
  * Endpoint: POST /dashboard/menu-setup/set-coordinates
  */
-router.post("/menu-setup/set-coordinates", async (req, res) => {
+router.post("/set-coordinates", async (req, res) => {
   try {
     const { business_id, coordinates } = req.body;
+
     if (!business_id || !coordinates || !Array.isArray(coordinates)) {
       return res.status(400).json({ error: "Date invalide." });
     }
 
-    await pool.query("DELETE FROM location_coordinates WHERE business_id = ?", [business_id]);
-    for (const coord of coordinates) {
-      await pool.query("INSERT INTO location_coordinates (business_id, corner_number, latitude, longitude) VALUES (?, ?, ?, ?)",
-        [business_id, coord.corner_number, coord.latitude, coord.longitude]
-      );
-    }
+    const coordinatesJson = JSON.stringify(coordinates);
+
+    await pool.query(
+      "UPDATE menu_setup SET coordinates = ? WHERE business_id = ?",
+      [coordinatesJson, business_id]
+    );
 
     res.json({ success: true, message: "Coordonatele locației au fost salvate." });
   } catch (error) {
@@ -54,7 +59,7 @@ router.post("/menu-setup/set-coordinates", async (req, res) => {
  * 🟢 3. Actualizarea intervalelor orare
  * Endpoint: PUT /dashboard/menu-setup/set-hours
  */
-router.put("/menu-setup/set-hours", async (req, res) => {
+router.put("/set-hours", async (req, res) => {
   try {
     const { business_id, bar_open, bar_close, kitchen_open, kitchen_close } = req.body;
     if (!business_id) {
@@ -77,7 +82,7 @@ router.put("/menu-setup/set-hours", async (req, res) => {
  * 🟢 4. Setarea modului de primire a comenzilor
  * Endpoint: PUT /dashboard/menu-setup/set-order-mode
  */
-router.put("/menu-setup/set-order-mode", async (req, res) => {
+router.put("/set-order-mode", async (req, res) => {
   try {
     const { business_id, receive_orders_together } = req.body;
     if (!business_id) {
@@ -96,7 +101,7 @@ router.put("/menu-setup/set-order-mode", async (req, res) => {
  * 🟢 5. Setarea confirmării comenzilor
  * Endpoint: PUT /dashboard/menu-setup/set-confirmation
  */
-router.put("/menu-setup/set-confirmation", async (req, res) => {
+router.put("/set-confirmation", async (req, res) => {
   try {
     const { business_id, confirm_orders } = req.body;
     if (!business_id) {
@@ -115,7 +120,7 @@ router.put("/menu-setup/set-confirmation", async (req, res) => {
  * 🟢 6. Suspendarea comenzilor online
  * Endpoint: PUT /dashboard/menu-setup/suspend-orders
  */
-router.put("/menu-setup/suspend-orders", async (req, res) => {
+router.put("/suspend-orders", async (req, res) => {
   try {
     const { business_id, suspend_online_orders } = req.body;
     if (!business_id) {
