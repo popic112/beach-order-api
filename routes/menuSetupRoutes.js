@@ -3,8 +3,25 @@ const router = express.Router();
 const pool = require("../config/db");
 
 /**
+ * 🟢 Verifică dacă business_id există deja în menu_setup
+ * Dacă nu există, îl creează automat înainte de UPDATE.
+ */
+const ensureBusinessExists = async (business_id) => {
+  const [existing] = await pool.query(
+    "SELECT id FROM menu_setup WHERE business_id = ?",
+    [business_id]
+  );
+
+  if (existing.length === 0) {
+    await pool.query(
+      "INSERT INTO menu_setup (business_id) VALUES (?)",
+      [business_id]
+    );
+  }
+};
+
+/**
  * 🟢 1. Obținerea setărilor meniului
- * Endpoint: GET /dashboard/menu-setup
  */
 router.get("/", async (req, res) => {
   try {
@@ -31,15 +48,15 @@ router.get("/", async (req, res) => {
 
 /**
  * 🟢 2. Setarea coordonatelor locației
- * Endpoint: POST /dashboard/menu-setup/set-coordinates
  */
 router.post("/set-coordinates", async (req, res) => {
   try {
     const { business_id, coordinates } = req.body;
-
     if (!business_id || !coordinates || !Array.isArray(coordinates)) {
       return res.status(400).json({ error: "Date invalide." });
     }
+
+    await ensureBusinessExists(business_id); // Verificăm dacă business_id există
 
     const coordinatesJson = JSON.stringify(coordinates);
 
@@ -57,7 +74,6 @@ router.post("/set-coordinates", async (req, res) => {
 
 /**
  * 🟢 3. Actualizarea intervalelor orare
- * Endpoint: PUT /dashboard/menu-setup/set-hours
  */
 router.put("/set-hours", async (req, res) => {
   try {
@@ -65,6 +81,8 @@ router.put("/set-hours", async (req, res) => {
     if (!business_id) {
       return res.status(400).json({ error: "business_id este obligatoriu." });
     }
+
+    await ensureBusinessExists(business_id);
 
     await pool.query(
       "UPDATE menu_setup SET bar_open = ?, bar_close = ?, kitchen_open = ?, kitchen_close = ? WHERE business_id = ?",
@@ -80,7 +98,6 @@ router.put("/set-hours", async (req, res) => {
 
 /**
  * 🟢 4. Setarea modului de primire a comenzilor
- * Endpoint: PUT /dashboard/menu-setup/set-order-mode
  */
 router.put("/set-order-mode", async (req, res) => {
   try {
@@ -88,6 +105,8 @@ router.put("/set-order-mode", async (req, res) => {
     if (!business_id) {
       return res.status(400).json({ error: "business_id este obligatoriu." });
     }
+
+    await ensureBusinessExists(business_id);
 
     await pool.query("UPDATE menu_setup SET receive_orders_together = ? WHERE business_id = ?", [receive_orders_together, business_id]);
     res.json({ success: true, message: "Modul de primire a comenzilor a fost actualizat." });
@@ -99,7 +118,6 @@ router.put("/set-order-mode", async (req, res) => {
 
 /**
  * 🟢 5. Setarea confirmării comenzilor
- * Endpoint: PUT /dashboard/menu-setup/set-confirmation
  */
 router.put("/set-confirmation", async (req, res) => {
   try {
@@ -107,6 +125,8 @@ router.put("/set-confirmation", async (req, res) => {
     if (!business_id) {
       return res.status(400).json({ error: "business_id este obligatoriu." });
     }
+
+    await ensureBusinessExists(business_id);
 
     await pool.query("UPDATE menu_setup SET confirm_orders = ? WHERE business_id = ?", [confirm_orders, business_id]);
     res.json({ success: true, message: "Confirmarea comenzilor a fost activată." });
@@ -118,7 +138,6 @@ router.put("/set-confirmation", async (req, res) => {
 
 /**
  * 🟢 6. Suspendarea comenzilor online
- * Endpoint: PUT /dashboard/menu-setup/suspend-orders
  */
 router.put("/suspend-orders", async (req, res) => {
   try {
@@ -126,6 +145,8 @@ router.put("/suspend-orders", async (req, res) => {
     if (!business_id) {
       return res.status(400).json({ error: "business_id este obligatoriu." });
     }
+
+    await ensureBusinessExists(business_id);
 
     await pool.query("UPDATE menu_setup SET suspend_online_orders = ? WHERE business_id = ?", [suspend_online_orders, business_id]);
     res.json({ success: true, message: "Comenzile online au fost suspendate temporar." });
