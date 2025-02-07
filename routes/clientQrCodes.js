@@ -3,7 +3,7 @@ const router = express.Router();
 const pool = require("../config/db");
 
 /**
- * 🟢 1. Obține business_id pe baza unui QR Code
+ * 🟢 1. Obține business_id și meniul pe baza unui QR Code
  * Endpoint: GET /api/client/qrcode-to-business?qr_code={qr_code}
  */
 router.get("/qrcode-to-business", async (req, res) => {
@@ -22,23 +22,37 @@ router.get("/qrcode-to-business", async (req, res) => {
 
     const connection = await pool.getConnection();
     try {
-      const [result] = await connection.query(
+      // 1️⃣ Obținem business_id aferent QR Code-ului
+      const [businessResult] = await connection.query(
         "SELECT business_id FROM qr_codes WHERE qr_code = ?",
         [qr_code]
       );
 
-      console.log("🔹 Query Result:", result);
+      console.log("🔹 Query Result for business_id:", businessResult);
 
-      if (result.length === 0) {
+      if (businessResult.length === 0) {
         return res.status(404).json({ error: "QR Code-ul nu este valid." });
       }
 
-      res.json({ business_id: result[0].business_id });
+      const business_id = businessResult[0].business_id;
+
+      // 2️⃣ Obținem meniul pentru business_id
+      const [menuResult] = await connection.query(
+        "SELECT id, name, price FROM menu WHERE business_id = ?",
+        [business_id]
+      );
+
+      console.log("🔹 Query Result for menu:", menuResult);
+
+      res.json({
+        business_id,
+        menu: menuResult
+      });
     } finally {
       connection.release();
     }
   } catch (error) {
-    console.error("❌ Eroare la obținerea business_id:", error);
+    console.error("❌ Eroare la obținerea business_id și meniului:", error);
     res.status(500).json({ error: "Eroare internă la server." });
   }
 });
