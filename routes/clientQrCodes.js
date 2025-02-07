@@ -3,7 +3,7 @@ const router = express.Router();
 const pool = require("../config/db");
 
 /**
- * 🟢 1. Obține business_id și meniul pe baza unui QR Code
+ * 🟢 Obține business_id și meniul pe baza unui QR Code
  * Endpoint: GET /api/client/qrcode-to-business?qr_code={qr_code}
  */
 router.get("/qrcode-to-business", async (req, res) => {
@@ -38,7 +38,7 @@ router.get("/qrcode-to-business", async (req, res) => {
 
       // 2️⃣ Obținem meniul pentru business_id
       const [menuResult] = await connection.query(
-        "SELECT id, name, price FROM menu WHERE business_id = ?",
+        "SELECT id, name, description, price, type, visible, image FROM menu WHERE business_id = ?",
         [business_id]
       );
 
