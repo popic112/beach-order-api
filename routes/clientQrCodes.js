@@ -36,15 +36,18 @@ router.get("/qrcode-to-business", async (req, res) => {
 
       // 2️⃣ Verificăm dacă `session_id` este valid sau trebuie generat unul nou
       let newSession = false;
-      if (!session_id || session_id.trim() === "") {
+      session_id = session_id ? session_id.trim() : "";
+
+      if (!session_id) {
         console.log("⚠️ Nu există session_id. Se generează unul nou...");
         session_id = uuidv4();
         newSession = true;
 
         await connection.query("INSERT INTO sessions (session_id, created_at) VALUES (?, NOW())", [session_id]);
       } else {
+        console.log("🔍 Verificare sesiune în baza de date pentru:", session_id);
         const [sessionResult] = await connection.query(
-          "SELECT session_id FROM sessions WHERE session_id = ?",
+          "SELECT session_id FROM sessions WHERE session_id = ? LIMIT 1",
           [session_id]
         );
 
@@ -54,6 +57,8 @@ router.get("/qrcode-to-business", async (req, res) => {
           newSession = true;
 
           await connection.query("INSERT INTO sessions (session_id, created_at) VALUES (?, NOW())", [session_id]);
+        } else {
+          console.log("✅ Session_id EXISTĂ în DB și va fi utilizat:", session_id);
         }
       }
 
