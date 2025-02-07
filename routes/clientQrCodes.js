@@ -3,7 +3,7 @@ const router = express.Router();
 const pool = require("../config/db");
 
 /**
- * 🟢 Obține business_id și meniul pe baza unui QR Code
+ * 🟢 Obține business_id, meniul și configurarea meniului pe baza unui QR Code
  * Endpoint: GET /api/client/qrcode-to-business?qr_code={qr_code}
  */
 router.get("/qrcode-to-business", async (req, res) => {
@@ -44,15 +44,36 @@ router.get("/qrcode-to-business", async (req, res) => {
 
       console.log("🔹 Query Result for menu:", menuResult);
 
+      // 3️⃣ Obținem datele din `menu-setup`
+      const [menuSetupResult] = await connection.query(
+        "SELECT id, bar_open, bar_close, kitchen_open, kitchen_close, receive_orders_together, confirm_orders, suspend_online_orders FROM menu_setup WHERE business_id = ?",
+        [business_id]
+      );
+
+      console.log("🔹 Query Result for menu setup:", menuSetupResult);
+
+      // 4️⃣ Obținem coordonatele aferente business_id
+      const [coordinatesResult] = await connection.query(
+        "SELECT corner_number, latitude, longitude FROM coordinates WHERE business_id = ?",
+        [business_id]
+      );
+
+      console.log("🔹 Query Result for coordinates:", coordinatesResult);
+
+      // Adăugăm coordonatele în menuSetupResult
+      let menuSetup = menuSetupResult.length > 0 ? menuSetupResult[0] : {};
+      menuSetup.coordinates = coordinatesResult;
+
       res.json({
         business_id,
-        menu: menuResult
+        menu: menuResult,
+        menu_setup: menuSetup
       });
     } finally {
       connection.release();
     }
   } catch (error) {
-    console.error("❌ Eroare la obținerea business_id și meniului:", error);
+    console.error("❌ Eroare la obținerea datelor:", error);
     res.status(500).json({ error: "Eroare internă la server." });
   }
 });
