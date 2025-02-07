@@ -26,8 +26,15 @@ router.get("/", async (req, res) => {
 
         const [settings] = await pool.query("SELECT * FROM menu_setup WHERE business_id = ?", [business_id]);
         if (!settings.length) {
-            return res.status(404).json({ error: "Setările meniului nu au fost găsite." });
+            await pool.query("INSERT INTO menu_setup (business_id, receive_orders_together, confirm_orders, suspend_online_orders) VALUES (?, ?, ?, ?)", 
+            [business_id, 1, 1, 1]);
+        
+            console.log(`✅ Business ID ${business_id} creat automat în baza de date.`);
+        
+            const [newSettings] = await pool.query("SELECT * FROM menu_setup WHERE business_id = ?", [business_id]);
+            return res.json(newSettings[0]);
         }
+        
 
         const parsedSettings = settings[0];
         parsedSettings.coordinates = parsedSettings.coordinates ? JSON.parse(parsedSettings.coordinates) : [];
