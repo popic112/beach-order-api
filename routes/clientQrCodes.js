@@ -37,6 +37,17 @@ router.get("/qrcode-to-business", async (req, res) => {
 
       const business_id = businessResult[0].business_id;
       const business_name = businessResult[0].business_name;
+      const umbrella_number = businessResult[0].umbrella_number; // 📌 Adăugat
+
+res.json({
+    session_id,
+    new_session: newSession,
+    business_id,
+    business_name,
+    umbrella_number,  // 🔹 Adăugăm umbrella_number în răspuns
+    menu: menuResult,
+    menu_setup: menuSetup
+});
       console.log(`✅ Business Found: ${business_name} (ID: ${business_id})`);
 
       // 2️⃣ Verificăm dacă `session_id` este valid sau trebuie generat unul nou
