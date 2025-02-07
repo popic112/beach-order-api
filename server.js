@@ -5,7 +5,8 @@ const cors = require("cors");
 
 const qrRoutes = require("./routes/qrRoutes");
 const menuRoutes = require("./routes/menuRoutes");
-const menuSetupRoutes = require("./routes/menuSetupRoutes"); // 🔥 Importăm noul fișier de rute
+const menuSetupRoutes = require("./routes/menuSetupRoutes");
+const clientQrRoutes = require("./routes/clientQrCodes"); // 🔥 Importăm noul fișier de rute
 
 const app = express();
 
@@ -16,14 +17,17 @@ app.get("/", (req, res) => {
   res.send("Beach Order API Running! 🚀");
 });
 
-// 🔗 Înregistrăm toate rutele pentru QR Codes
+// 🔗 Înregistrăm toate rutele pentru QR Codes (Dashboard)
 app.use("/api/qrcodes", qrRoutes);
+
+// 🔗 Înregistrăm toate rutele pentru client (QR Code → Business ID)
+app.use("/api/client", clientQrRoutes); // 🔥 Adăugat API-ul pentru client
 
 // 🔗 Înregistrăm toate rutele pentru meniu
 app.use("/dashboard", menuRoutes);
 
 // 🔗 Înregistrăm toate rutele pentru setările meniului și comenzilor
-app.use("/dashboard/menu-setup", menuSetupRoutes); // 🔥 Adăugat noua rută
+app.use("/dashboard/menu-setup", menuSetupRoutes);
 
 const PORT = process.env.PORT || 4000;
 

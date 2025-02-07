@@ -33,7 +33,7 @@ const ensureBusinessExists = async (business_id) => {
                 INSERT INTO menu_setup 
                 (business_id, receive_orders_together, confirm_orders, suspend_online_orders, bar_open, bar_close, kitchen_open, kitchen_close, coordinates) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
-            [business_id, 1, 1, 1, "08:00", "22:00", "10:00", "21:00", JSON.stringify([
+            [business_id, 1, 1, 1, "08:00", "20:00", "10:00", "19:00", JSON.stringify([
                 { corner_number: 1, latitude: "0", longitude: "0" },
                 { corner_number: 2, latitude: "0", longitude: "0" },
                 { corner_number: 3, latitude: "0", longitude: "0" },
