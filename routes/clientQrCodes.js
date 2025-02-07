@@ -23,7 +23,10 @@ router.get("/qrcode-to-business", async (req, res) => {
     try {
       // 1️⃣ Obține business_id aferent QR Code-ului
       const [businessResult] = await connection.query(
-        "SELECT business_id FROM qr_codes WHERE qr_code = ?",
+        `SELECT q.business_id, b.name AS business_name 
+         FROM qr_codes q 
+         JOIN businesses b ON q.business_id = b.id
+         WHERE q.qr_code = ?`,
         [qr_code]
       );
 
@@ -32,6 +35,7 @@ router.get("/qrcode-to-business", async (req, res) => {
       }
 
       const business_id = businessResult[0].business_id;
+      const business_name = businessResult[0].business_name;
       console.log("✅ Business ID:", business_id);
 
       // 2️⃣ Verificăm dacă `session_id` este valid sau trebuie generat unul nou
@@ -90,6 +94,7 @@ router.get("/qrcode-to-business", async (req, res) => {
         session_id,
         new_session: newSession,
         business_id,
+        business_name,  // 🔹 Adăugăm aici numele locației
         menu: menuResult,
         menu_setup: menuSetup
       });
