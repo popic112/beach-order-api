@@ -3,16 +3,11 @@ const router = express.Router();
 const pool = require("../config/db");
 const { v4: uuidv4 } = require("uuid");
 
-/**
- * 🟢 Scanare QR Code + verificare/generare session_id
- * Endpoint: GET /api/client/qrcode-to-business?qr_code={qr_code}&session_id={session_id}
- */
 router.get("/qrcode-to-business", async (req, res) => {
   console.log("🔹 GET /qrcode-to-business - Query Params:", req.query);
 
   try {
     let { qr_code, session_id } = req.query;
-
     if (!qr_code) {
       return res.status(400).json({ error: "qr_code este obligatoriu." });
     }
@@ -22,7 +17,7 @@ router.get("/qrcode-to-business", async (req, res) => {
 
     const connection = await pool.getConnection();
     try {
-      // 1️⃣ Obține `business_id` și `business_name` din `qr_codes`
+      // 1️⃣ Obține `business_id`, `business_name` și `umbrella_number`
       const [businessResult] = await connection.query(
         `SELECT q.business_id, q.umbrella_number, b.name AS business_name 
          FROM qr_codes q 
@@ -37,18 +32,9 @@ router.get("/qrcode-to-business", async (req, res) => {
 
       const business_id = businessResult[0].business_id;
       const business_name = businessResult[0].business_name;
-      const umbrella_number = businessResult[0].umbrella_number; // 📌 Adăugat
+      const umbrella_number = businessResult[0].umbrella_number;
 
-res.json({
-    session_id,
-    new_session: newSession,
-    business_id,
-    business_name,
-    umbrella_number,  // 🔹 Adăugăm umbrella_number în răspuns
-    menu: menuResult,
-    menu_setup: menuSetup
-});
-      console.log(`✅ Business Found: ${business_name} (ID: ${business_id})`);
+      console.log(`✅ Business Found: ${business_name} (ID: ${business_id}), Umbrella: ${umbrella_number}`);
 
       // 2️⃣ Verificăm dacă `session_id` este valid sau trebuie generat unul nou
       let newSession = false;
@@ -94,11 +80,13 @@ res.json({
 
       console.log("✅ Sending final response...");
 
+      // ✅ Răspuns final, ACUM inclus și `umbrella_number`
       res.json({
         session_id,
         new_session: newSession,
         business_id,
-        business_name,  // 🔹 Adăugat pentru afișare în UI
+        business_name,
+        umbrella_number, // 📌 Acum este corect plasat
         menu: menuResult,
         menu_setup: menuSetup
       });
