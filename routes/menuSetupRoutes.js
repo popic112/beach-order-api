@@ -17,7 +17,7 @@ const ensureBusinessExists = async (business_id) => {
  * 🟢 1. Obținerea setărilor meniului
  * Endpoint: GET /dashboard/menu-setup
  */
-router.get("/", async (req, res) => {
+ router.get("/", async (req, res) => {
     try {
         const { business_id } = req.query;
         if (!business_id) {
@@ -26,55 +26,38 @@ router.get("/", async (req, res) => {
 
         const [settings] = await pool.query("SELECT * FROM menu_setup WHERE business_id = ?", [business_id]);
 
-if (!settings.length) {
-    await pool.query(`
-        INSERT INTO menu_setup 
-        (business_id, receive_orders_together, confirm_orders, suspend_online_orders, bar_open, bar_close, kitchen_open, kitchen_close, coordinates) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, CAST(? AS JSON))`, 
-    [business_id, 1, 1, 1, "08:00", "22:00", "10:00", "21:00", 
-    JSON.stringify([
-        { corner_number: 1, latitude: "0", longitude: "0" },
-        { corner_number: 2, latitude: "0", longitude: "0" },
-        { corner_number: 3, latitude: "0", longitude: "0" },
-        { corner_number: 4, latitude: "0", longitude: "0" }
-    ])]);
+        if (!settings.length) {
+            console.log(`⚠️ Nu există setări pentru business_id=${business_id}. Se creează...`);
 
-    console.log(`✅ Business ID ${business_id} creat automat cu valori standard.`);
+            await pool.query(`
+                INSERT INTO menu_setup 
+                (business_id, receive_orders_together, confirm_orders, suspend_online_orders, bar_open, bar_close, kitchen_open, kitchen_close, coordinates) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
+            [business_id, 1, 1, 1, "08:00", "22:00", "10:00", "21:00", JSON.stringify([
+                { corner_number: 1, latitude: "0", longitude: "0" },
+                { corner_number: 2, latitude: "0", longitude: "0" },
+                { corner_number: 3, latitude: "0", longitude: "0" },
+                { corner_number: 4, latitude: "0", longitude: "0" }
+            ])]);
 
-    const [newSettings] = await pool.query("SELECT * FROM menu_setup WHERE business_id = ?", [business_id]);
+            // 🔹 Preia noile date
+            const [newSettings] = await pool.query("SELECT * FROM menu_setup WHERE business_id = ?", [business_id]);
 
-    // 🔹 Asigură-te că coordinates este returnat ca JSON corect
-    const parsedSettings = newSettings[0];
-    try {
-        parsedSettings.coordinates = parsedSettings.coordinates 
-            ? JSON.parse(parsedSettings.coordinates) 
-            : [];
-    } catch (error) {
-        console.error("❌ Eroare la parsarea coordonatelor:", error);
-        parsedSettings.coordinates = [];
-    }
+            newSettings[0].coordinates = JSON.parse(newSettings[0].coordinates);
 
-    return res.json(parsedSettings);
-}
-
-        
-
-        const parsedSettings = settings[0];
-        try {
-            parsedSettings.coordinates = parsedSettings.coordinates 
-                ? JSON.parse(parsedSettings.coordinates) 
-                : [];
-        } catch (error) {
-            console.error("❌ Eroare la parsarea coordonatelor:", error);
-            parsedSettings.coordinates = [];
+            return res.json(newSettings[0]);
         }
-        
-        res.json(parsedSettings);
+
+        // 🔹 Conversie JSON pentru a evita string-uri dublu escapate
+        settings[0].coordinates = settings[0].coordinates ? JSON.parse(settings[0].coordinates) : [];
+
+        res.json(settings[0]);
     } catch (error) {
         console.error("❌ Eroare la obținerea setărilor meniului:", error);
         res.status(500).json({ error: "Eroare internă la server." });
     }
 });
+
 
 /**
  * 🟢 2. Setarea coordonatelor locației
