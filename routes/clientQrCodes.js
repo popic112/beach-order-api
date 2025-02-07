@@ -12,6 +12,7 @@ router.get("/qrcode-to-business", async (req, res) => {
 
   try {
     let { qr_code, session_id } = req.query;
+
     if (!qr_code) {
       return res.status(400).json({ error: "qr_code este obligatoriu." });
     }
@@ -21,7 +22,7 @@ router.get("/qrcode-to-business", async (req, res) => {
 
     const connection = await pool.getConnection();
     try {
-      // 1️⃣ Obține business_id aferent QR Code-ului
+      // 1️⃣ Obține `business_id` și `business_name` din `qr_codes`
       const [businessResult] = await connection.query(
         `SELECT q.business_id, b.name AS business_name 
          FROM qr_codes q 
@@ -36,37 +37,32 @@ router.get("/qrcode-to-business", async (req, res) => {
 
       const business_id = businessResult[0].business_id;
       const business_name = businessResult[0].business_name;
-      console.log("✅ Business ID:", business_id);
+      console.log(`✅ Business Found: ${business_name} (ID: ${business_id})`);
 
       // 2️⃣ Verificăm dacă `session_id` este valid sau trebuie generat unul nou
       let newSession = false;
       session_id = session_id ? session_id.trim() : "";
 
       if (!session_id) {
-        console.log("⚠️ Nu există session_id. Se generează unul nou...");
         session_id = uuidv4();
         newSession = true;
-
+        console.log("⚠️ Nu există session_id. Se generează unul nou:", session_id);
         await connection.query("INSERT INTO sessions (session_id, created_at) VALUES (?, NOW())", [session_id]);
       } else {
-        console.log("🔍 Verificare sesiune în baza de date pentru:", session_id);
         const [sessionResult] = await connection.query(
           "SELECT session_id FROM sessions WHERE session_id = ? LIMIT 1",
           [session_id]
         );
 
         if (sessionResult.length === 0) {
-          console.log("⚠️ Session_id invalid. Se generează unul nou...");
           session_id = uuidv4();
           newSession = true;
-
+          console.log("⚠️ Session_id invalid. Se generează unul nou:", session_id);
           await connection.query("INSERT INTO sessions (session_id, created_at) VALUES (?, NOW())", [session_id]);
         } else {
           console.log("✅ Session_id EXISTĂ în DB și va fi utilizat:", session_id);
         }
       }
-
-      console.log("✅ Session ID utilizat:", session_id);
 
       // 3️⃣ Obține meniul
       const [menuResult] = await connection.query(
@@ -74,17 +70,14 @@ router.get("/qrcode-to-business", async (req, res) => {
         [business_id]
       );
 
-      console.log("✅ Query Result for menu:", menuResult);
+      console.log(`✅ ${menuResult.length} produse găsite în meniu pentru ${business_name}`);
 
-      // 4️⃣ Obține menu-setup (INCLUDE coordonatele direct din această tabelă)
+      // 4️⃣ Obține setările meniului (menu_setup)
       const [menuSetupResult] = await connection.query(
         "SELECT id, bar_open, bar_close, kitchen_open, kitchen_close, receive_orders_together, confirm_orders, suspend_online_orders, coordinates FROM menu_setup WHERE business_id = ?",
         [business_id]
       );
 
-      console.log("✅ Query Result for menu setup:", menuSetupResult);
-
-      // Convertim JSON-ul din string în obiect
       let menuSetup = menuSetupResult.length > 0 ? menuSetupResult[0] : {};
       menuSetup.coordinates = menuSetup.coordinates ? JSON.parse(menuSetup.coordinates) : [];
 
@@ -94,10 +87,11 @@ router.get("/qrcode-to-business", async (req, res) => {
         session_id,
         new_session: newSession,
         business_id,
-        business_name,  // 🔹 Adăugăm aici numele locației
+        business_name,  // 🔹 Adăugat pentru afișare în UI
         menu: menuResult,
         menu_setup: menuSetup
       });
+
     } finally {
       connection.release();
     }
