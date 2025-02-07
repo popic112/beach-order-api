@@ -26,14 +26,23 @@ router.get("/", async (req, res) => {
 
         const [settings] = await pool.query("SELECT * FROM menu_setup WHERE business_id = ?", [business_id]);
         if (!settings.length) {
-            await pool.query("INSERT INTO menu_setup (business_id, receive_orders_together, confirm_orders, suspend_online_orders) VALUES (?, ?, ?, ?)", 
-            [business_id, 1, 1, 1]);
+            await pool.query(`
+                INSERT INTO menu_setup 
+                (business_id, receive_orders_together, confirm_orders, suspend_online_orders, bar_open, bar_close, kitchen_open, kitchen_close, coordinates) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
+            [business_id, 1, 1, 1, "08:00", "22:00", "10:00", "21:00", JSON.stringify([
+                { corner_number: 1, latitude: "0", longitude: "0" },
+                { corner_number: 2, latitude: "0", longitude: "0" },
+                { corner_number: 3, latitude: "0", longitude: "0" },
+                { corner_number: 4, latitude: "0", longitude: "0" }
+            ])]);
         
-            console.log(`✅ Business ID ${business_id} creat automat în baza de date.`);
+            console.log(`✅ Business ID ${business_id} creat automat cu valori standard.`);
         
             const [newSettings] = await pool.query("SELECT * FROM menu_setup WHERE business_id = ?", [business_id]);
             return res.json(newSettings[0]);
         }
+        
         
 
         const parsedSettings = settings[0];
