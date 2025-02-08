@@ -2,6 +2,7 @@ require("dotenv").config({ path: "./.env" });
 const pool = require("./config/db");
 const express = require("express");
 const cors = require("cors");
+const placeOrderRoutes = require("./routes/place_orders"); // 🔥 Importăm ruta pentru plasarea comenzilor
 
 const qrRoutes = require("./routes/qrRoutes");
 const menuRoutes = require("./routes/menuRoutes");
@@ -31,6 +32,10 @@ app.use("/dashboard", menuRoutes);
 
 // 🔗 Înregistrăm toate rutele pentru setările meniului și comenzilor
 app.use("/dashboard/menu-setup", menuSetupRoutes);
+
+// 🔗 Endpoint pentru plasarea comenzilor
+app.use("/api/place_orders", placeOrderRoutes);  
+
 
 const PORT = process.env.PORT || 4000;
 
