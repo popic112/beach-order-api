@@ -80,15 +80,17 @@ router.get("/qrcode-to-business", async (req, res) => {
 
       console.log("✅ Sending final response...");
 
-      // ✅ Răspuns final, ACUM inclus și `umbrella_number`
+      // ✅ Răspuns final
       res.json({
+        qr_code,
         session_id,
         new_session: newSession,
         business_id,
         business_name,
-        umbrella_number, // 📌 Acum este corect plasat
+        umbrella_number,
         menu: menuResult,
-        menu_setup: menuSetup
+        menu_setup: menuSetup,
+        coordinates: menuSetup.coordinates || null,
       });
 
     } finally {
