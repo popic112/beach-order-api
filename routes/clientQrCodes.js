@@ -19,13 +19,12 @@ router.get("/qrcode-to-business", async (req, res) => {
     try {
       // 1️⃣ Obține `business_id`, `business_name` și `umbrella_number`
       const [businessResult] = await connection.query(
-        `SELECT q.business_id, q.umbrella_number, b.slug AS business_slug 
+        `SELECT q.business_id, q.umbrella_number, b.name AS business_name 
          FROM qr_codes q 
          JOIN businesses b ON q.business_id = b.id
-         WHERE b.slug = ?`,
-        [businessSlug]
-            
-      );      
+         WHERE q.qr_code = ?`,
+        [qr_code]
+      );
 
       if (businessResult.length === 0) {
         return res.status(404).json({ error: "QR Code-ul nu este valid." });
