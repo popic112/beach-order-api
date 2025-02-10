@@ -26,43 +26,6 @@ router.get("/menu", async (req, res) => {
 });
 
 /**
- * 🟢 Obține meniul pe baza slug-ului
- * Endpoint: GET /dashboard/menu-by-slug/:slug
- */
- router.get("/menu-by-slug/:slug", async (req, res) => {
-  try {
-    const { slug } = req.params;
-    if (!slug) {
-      return res.status(400).json({ error: "Slug-ul este obligatoriu." });
-    }
-
-    // Obține business_id pe baza slug-ului
-    const [businessResult] = await pool.query(
-      "SELECT id FROM businesses WHERE slug = ?",
-      [slug]
-    );
-
-    if (businessResult.length === 0) {
-      return res.status(404).json({ error: "Business-ul nu există." });
-    }
-
-    const business_id = businessResult[0].id;
-
-    // Obține meniul bazat pe business_id
-    const [menu] = await pool.query(
-      "SELECT id, name, description, price, type, visible FROM menu WHERE business_id = ?",
-      [business_id]
-    );
-
-    res.json({ business_id, menu });
-  } catch (error) {
-    console.error("Eroare la obținerea meniului:", error);
-    res.status(500).json({ error: "Eroare internă la server." });
-  }
-});
-
-
-/**
  * 🟢 2. Adăugare produs în meniu
  * Endpoint: POST /dashboard/menu/add
  */
