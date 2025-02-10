@@ -24,7 +24,7 @@ router.post("/", async (req, res) => {
         // 🔹 1️⃣ Găsim `umbrella_number` asociat cu `qr_code`
         const [umbrellaResult] = await connection.execute(
             "SELECT umbrella_number FROM qr_codes WHERE qr_code = ? AND business_id = ?",
-            [qr_code, business_id]
+            [qr_codes, business_id]
         );
 
         if (umbrellaResult.length === 0) {
