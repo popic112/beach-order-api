@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const pool = require("../config/db");
-const { v4: uuidv4 } = require("uuid");
+const { v4: uuidv4 } = require("uuid"); // ✅ Importă generatorul de UUID
 
 router.get("/qrcode-to-business", async (req, res) => {
   console.log("🔹 GET /qrcode-to-business - Query Params:", req.query);
@@ -38,7 +38,14 @@ router.get("/qrcode-to-business", async (req, res) => {
         return res.status(500).json({ error: "❌ Business Name nu este definit!" });
       }
 
-      // 2️⃣ Obține meniul pentru acest business
+      // 2️⃣ Dacă `session_id` lipsește, generăm unul nou și îl salvăm în DB
+      if (!session_id || session_id === "undefined") {
+        session_id = uuidv4();
+        console.log("🔹 Generăm un nou session_id:", session_id);
+        await connection.query("INSERT INTO sessions (session_id) VALUES (?)", [session_id]);
+      }
+
+      // 3️⃣ Obține meniul pentru acest business
       const [menuItems] = await connection.query(
         `SELECT id, name, description, price, type, visible 
          FROM menu 
@@ -46,7 +53,7 @@ router.get("/qrcode-to-business", async (req, res) => {
         [business_id]
       );
 
-      // 3️⃣ Obține coordonatele și orele de funcționare
+      // 4️⃣ Obține coordonatele și orele de funcționare
       const [menuSetup] = await connection.query(
         `SELECT bar_open, bar_close, kitchen_open, kitchen_close, coordinates 
          FROM menu_setup 
@@ -68,12 +75,13 @@ router.get("/qrcode-to-business", async (req, res) => {
         }
       }
 
-      // 4️⃣ Construim și trimitem răspunsul final
+      // 5️⃣ Construim și trimitem răspunsul final
       res.json({
         business_name,
         qr_code,
         umbrella_number,
         business_id,
+        session_id, // ✅ Acum returnăm session_id
         menu: menuItems.length > 0 ? menuItems : [],
         bar_open,
         bar_close,
