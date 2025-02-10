@@ -3,17 +3,17 @@ const router = express.Router();
 const pool = require("../config/db"); // Importăm conexiunea DB
 
 /**
- * 🟢 Plasare comandă (cu separare `bar` vs `kitchen`)
+ * 🟢 Plasare comandă (cu separare `bar` vs `kitchen` și preluare `umbrella_number`)
  * Endpoint: POST /api/place_orders
  */
 router.post("/", async (req, res) => {
-    const { business_id, qr_code, umbrella_number, order_items, payment_method, session_id, position_verified } = req.body;
+    const { business_id, qr_code, order_items, payment_method, session_id, position_verified } = req.body;
 
     if (!position_verified) {
         return res.status(400).json({ success: false, message: "Poziția clientului nu a fost verificată!" });
     }
 
-    if (!business_id || !qr_code || !umbrella_number || !order_items.length || !payment_method || !session_id) {
+    if (!business_id || !qr_code || !order_items.length || !payment_method || !session_id) {
         return res.status(400).json({ success: false, message: "Toate câmpurile sunt necesare!" });
     }
 
@@ -21,7 +21,19 @@ router.post("/", async (req, res) => {
     await connection.beginTransaction();
 
     try {
-        // 🔹 1️⃣ Calculăm totalul comenzii și determinăm `type` pentru fiecare produs
+        // 🔹 1️⃣ Caută `umbrella_number` din `umbrella_assignments` bazat pe `qr_code`
+        const [umbrellaResult] = await connection.execute(
+            "SELECT umbrella_number FROM umbrella_assignments WHERE qr_code = ? AND business_id = ?",
+            [qr_code, business_id]
+        );
+
+        if (!umbrellaResult.length) {
+            throw new Error(`❌ Nicio umbrelă găsită pentru QR Code: ${qr_code}`);
+        }
+
+        const umbrella_number = umbrellaResult[0].umbrella_number; // 🟢 Umbrela asociată
+
+        // 🔹 2️⃣ Calculăm totalul comenzii și determinăm `type` pentru fiecare produs
         let total_price = 0;
         for (const item of order_items) {
             const [rows] = await connection.execute(
@@ -38,7 +50,7 @@ router.post("/", async (req, res) => {
             item.type = rows[0].type; // 🟢 `bar` sau `kitchen`
         }
 
-        // 🔹 2️⃣ Inserăm comanda în `orders` cu status inițial "pending"
+        // 🔹 3️⃣ Inserăm comanda în `orders` cu status inițial "pending"
         const [orderResult] = await connection.execute(
             "INSERT INTO orders (business_id, qr_code, umbrella_number, session_id, total_price, payment_method, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())",
             [business_id, qr_code, umbrella_number, session_id, total_price, payment_method, "pending"]
@@ -46,7 +58,7 @@ router.post("/", async (req, res) => {
 
         const order_id = orderResult.insertId;
 
-        // 🔹 3️⃣ Inserăm fiecare produs în `order_items`
+        // 🔹 4️⃣ Inserăm fiecare produs în `order_items`
         for (const item of order_items) {
             await connection.execute(
                 "INSERT INTO order_items (order_id, menu_item_id, quantity, note, price, type, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
