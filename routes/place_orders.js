@@ -3,7 +3,7 @@ const router = express.Router();
 const pool = require("../config/db"); // Importăm conexiunea DB
 
 /**
- * 🟢 Plasare comandă (cu separare `bar` vs `kitchen`)
+ * 🟢 Plasare comandă (cu preluarea `umbrella_number` din `umbrella_assignments`)
  * Endpoint: POST /api/place_orders
  */
 router.post("/", async (req, res) => {
@@ -21,19 +21,18 @@ router.post("/", async (req, res) => {
     await connection.beginTransaction();
 
     try {
-        // 🟢 1️⃣ Obținem numărul umbrelei din `qr_codes`
+        // 🔹 1️⃣ Găsim `umbrella_number` asociat cu `qr_code`
         const [umbrellaResult] = await connection.execute(
             "SELECT umbrella_number FROM qr_codes WHERE qr_code = ? AND business_id = ?",
             [qr_code, business_id]
         );
 
-        // Verificăm dacă am găsit umbrela asociată
         if (umbrellaResult.length === 0) {
-            throw new Error("Nu s-a găsit o umbrelă asociată acestui QR code!");
+            throw new Error(`⚠️ Nu s-a găsit o umbrelă pentru acest QR Code: ${qr_code}`);
         }
 
-        // Setăm `umbrella_number` din baza de date
         const umbrella_number = umbrellaResult[0].umbrella_number;
+        console.log(`🌂 Umbrella Number găsit: ${umbrella_number}`);
 
         // 🔹 2️⃣ Calculăm totalul comenzii și determinăm `type` pentru fiecare produs
         let total_price = 0;
