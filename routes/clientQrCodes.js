@@ -9,7 +9,7 @@ router.get("/qrcode-to-business", async (req, res) => {
   try {
     let { qr_code, session_id } = req.query;
     if (!qr_code) {
-      return res.status(400).send("❌ QR Code lipsă!");
+      return res.status(400).json({ error: "❌ QR Code lipsă!" });
     }
 
     qr_code = qr_code.trim().replace(/[^a-zA-Z0-9\-]/g, "");
@@ -27,30 +27,41 @@ router.get("/qrcode-to-business", async (req, res) => {
       );
 
       if (businessResult.length === 0) {
-        return res.status(404).send("❌ QR Code invalid!");
+        return res.status(404).json({ error: "❌ QR Code invalid!" });
       }
 
       const business_name = businessResult[0].business_name;
+      const business_id = businessResult[0].business_id;
+      const umbrella_number = businessResult[0].umbrella_number;
 
       if (!business_name) {
-        return res.status(500).send("❌ Business Name nu este definit!");
+        return res.status(500).json({ error: "❌ Business Name nu este definit!" });
       }
 
+      // 2️⃣ Obține meniul pentru acest business
+      const [menuItems] = await connection.query(
+        `SELECT id, name, description, price, type, visible 
+         FROM menu 
+         WHERE business_id = ? AND visible = 1`,
+        [business_id]
+      );
+
+      // 3️⃣ Construim și trimitem răspunsul final
       res.json({
-        business_name: business_name,
-        qr_code: qr_code,
-        umbrella_number: businessResult[0].umbrella_number,
-        business_id: businessResult[0].business_id
+        business_name,
+        qr_code,
+        umbrella_number,
+        business_id,
+        menu: menuItems.length > 0 ? menuItems : [] // ✅ Evită problemele dacă meniul este gol
       });
-      
+
     } finally {
       connection.release();
     }
   } catch (error) {
     console.error("❌ Eroare server:", error);
-    res.status(500).send("❌ Eroare internă.");
+    res.status(500).json({ error: "❌ Eroare internă." });
   }
 });
-
 
 module.exports = router;
