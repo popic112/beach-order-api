@@ -17,7 +17,7 @@ router.get("/qrcode-to-business", async (req, res) => {
 
     const connection = await pool.getConnection();
     try {
-      // 1️⃣ Obține `business_id` și `business_name`
+      // 1️⃣ Obține `business_id`, `business_name` și `umbrella_number`
       const [businessResult] = await connection.query(
         `SELECT q.business_id, q.umbrella_number, b.name AS business_name 
          FROM qr_codes q 
@@ -46,13 +46,40 @@ router.get("/qrcode-to-business", async (req, res) => {
         [business_id]
       );
 
-      // 3️⃣ Construim și trimitem răspunsul final
+      // 3️⃣ Obține coordonatele și orele de funcționare
+      const [menuSetup] = await connection.query(
+        `SELECT bar_open, bar_close, kitchen_open, kitchen_close, coordinates 
+         FROM menu_setup 
+         WHERE business_id = ? LIMIT 1`,
+        [business_id]
+      );
+
+      let bar_open = null, bar_close = null, kitchen_open = null, kitchen_close = null, coordinates = [];
+      if (menuSetup.length > 0) {
+        bar_open = menuSetup[0].bar_open;
+        bar_close = menuSetup[0].bar_close;
+        kitchen_open = menuSetup[0].kitchen_open;
+        kitchen_close = menuSetup[0].kitchen_close;
+
+        try {
+          coordinates = JSON.parse(menuSetup[0].coordinates); // ✅ Parsăm JSON-ul cu coordonatele
+        } catch (error) {
+          console.error("❌ Eroare la parsarea coordonatelor:", error);
+        }
+      }
+
+      // 4️⃣ Construim și trimitem răspunsul final
       res.json({
         business_name,
         qr_code,
         umbrella_number,
         business_id,
-        menu: menuItems.length > 0 ? menuItems : [] // ✅ Evită problemele dacă meniul este gol
+        menu: menuItems.length > 0 ? menuItems : [],
+        bar_open,
+        bar_close,
+        kitchen_open,
+        kitchen_close,
+        coordinates
       });
 
     } finally {
