@@ -36,13 +36,13 @@ router.get("/qrcode-to-business", async (req, res) => {
         return res.status(500).send("❌ Business Name nu este definit!");
       }
 
-      const redirectUrl = `/menu/${encodeURIComponent(business_name)}?qr_code=${qr_code}`;
-
-      console.log(`✅ Redirecting to: ${redirectUrl}`);
-
-      // 🔹 Forțăm redirect-ul cu HTTP 302
-      res.status(302).setHeader("Location", redirectUrl).end();
-
+      res.json({
+        business_name: business_name,
+        qr_code: qr_code,
+        umbrella_number: businessResult[0].umbrella_number,
+        business_id: businessResult[0].business_id
+      });
+      
     } finally {
       connection.release();
     }

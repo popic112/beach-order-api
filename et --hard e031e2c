@@ -1,0 +1,89 @@
+[33md2528f1[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Update place_orders.js
+[33ma38e390[m Update place_orders.js
+[33md44f00e[m Revert "Update clientQrCodes.js"
+[33m74541fa[m Revert "Update clientQrCodes.js"
+[33mfdff160[m Revert "Update clientQrCodes.js"
+[33m588435e[m Revert "Update clientQrCodes.js"
+[33m1b8cbf3[m Revert "Update menuRoutes.js"
+[33m840443c[m Update menuRoutes.js
+[33m9cbb629[m Update clientQrCodes.js
+[33m2f9e3c5[m Update clientQrCodes.js
+[33m4ac5b56[m Update clientQrCodes.js
+[33mca01e20[m Update clientQrCodes.js
+[33mc3f91bb[m Update clientQrCodes.js
+[33m51dc344[m Update clientQrCodes.js
+[33m67052ab[m Update clientQrCodes.js
+[33m84d019f[m Update place_orders.js
+[33m49190ef[m Update place_orders.js
+[33m4c20715[m Update place_orders.js
+[33mcd01694[m Update place_orders.js
+[33md955c46[m Update place_orders.js
+[33m8ad20f7[m Update place_orders.js
+[33m87bf8e2[m[33m ([m[1;32mdev3[m[33m)[m Update place_orders.js
+[33me031e2c[m[33m ([m[1;32mdev2[m[33m, [m[1;32mdev[m[33m)[m place_order
+[33m9f172a4[m Update clientQrCodes.js
+[33m1182913[m Update clientQrCodes.js
+[33mce2fcd9[m Update clientQrCodes.js
+[33m2a2204d[m Update clientQrCodes.js
+[33m05e2b77[m Update clientQrCodes.js
+[33md61d399[m Update clientQrCodes.js
+[33m070f2a9[m Update clientQrCodes.js
+[33me9abca9[m session client id
+[33m30eacaf[m Update clientQrCodes.js
+[33mdf5cd54[m Update clientQrCodes.js
+[33m89c8e8e[m Update clientQrCodes.js
+[33m850d66d[m Update clientQrCodes.js
+[33m9219844[m Update clientQrCodes.js
+[33mfbe2aee[m Update clientQrCodes.js
+[33mef31581[m Update clientQrCodes.js
+[33mfeb15e5[m Update clientQrCodes.js
+[33mec98ef5[m qr code client
+[33m6575648[m Update menuSetupRoutes.js
+[33m9a825f9[m Update menuSetupRoutes.js
+[33m9061149[m Update menuSetupRoutes.js
+[33mb20e7be[m Update menuSetupRoutes.js
+[33me8bf3ee[m Update menuSetupRoutes.js
+[33m5c10be4[m Update menuSetupRoutes.js
+[33m1b77a9d[m Update menuSetupRoutes.js
+[33m636ae6c[m Update menuSetupRoutes.js
+[33mc3be17f[m Update menuSetupRoutes.js
+[33m9733503[m Update menuSetupRoutes.js
+[33m5a1b1ff[m Update menuSetupRoutes.js
+[33mdf3673e[m menu setup
+[33m457f4ad[m Update qrRoutes.js
+[33m4c29245[m Update qrRoutes.js
+[33mbc73164[m Update menuRoutes.js
+[33m0f35b34[m Update menuRoutes.js
+[33me601d8c[m Update menuRoutes.js
+[33mbbc8f9b[m Update menuRoutes.js
+[33m83efa5c[m menus
+[33mf73caf6[m Update qrRoutes.js
+[33m7cd38c4[m aasd
+[33mb32d9d3[m asfasv
+[33m6cbe990[m Update server.js
+[33mf6e3fd9[m Update server.js
+[33m26f4b8e[m Update server.js
+[33m03cafdd[m asdaf
+[33m1cb3be0[m Update server.js
+[33ma3c9669[m Update server.js
+[33m5f18c34[m Update qrRoutes.js
+[33m961a464[m Update qrRoutes.js
+[33m9b40aa0[m qrRoutes.js toate api-urile
+[33mb574ba9[m mysql2 in loc de mariadb
+[33mdc49e53[m Actualizare cod fără Sequelize, configurare DB manuală
+[33m4b686d0[m Update .env
+[33mc8c96c7[m Create config.json
+[33m4698735[m Removed Sequelize and manual DB management
+[33mf970eae[m Update 20250205172416-update-qr-codes-table.js
+[33m038a872[m Update QR Codes table with business_id and umbrella_number
+[33mc03a908[m Update .gitignore
+[33m0e63b8a[m update sequlize
+[33md4744c4[m Remove node_modules from repo
+[33m712fe50[m Update .env
+[33mb2f3f3a[m Update .env
+[33mb2db933[m updates
+[33m4543ba7[m updates
+[33ma4213a8[m update
+[33mc18f1f4[m Initial commit with package.json and server.js
+[33me08839d[m Initial commit
+[33meae2165[m first commit
