@@ -3,7 +3,7 @@ const router = express.Router();
 const pool = require("../config/db"); // Importăm conexiunea DB
 
 /**
- * 🟢 Plasare comandă (cu preluarea `umbrella_number` din `umbrella_assignments`)
+ * 🟢 Plasare comandă (cu preluarea `umbrella_number` din `qr_codes`)
  * Endpoint: POST /api/place_orders
  */
 router.post("/", async (req, res) => {
@@ -24,7 +24,7 @@ router.post("/", async (req, res) => {
         // 🔹 1️⃣ Găsim `umbrella_number` asociat cu `qr_code`
         const [umbrellaResult] = await connection.execute(
             "SELECT umbrella_number FROM qr_codes WHERE qr_code = ? AND business_id = ?",
-            [qr_codes, business_id]
+            [qr_code, business_id]
         );
 
         if (umbrellaResult.length === 0) {
