@@ -21,18 +21,18 @@ router.post("/", async (req, res) => {
     await connection.beginTransaction();
 
     try {
-        // 🔹 1️⃣ Găsim `umbrella_number` asociat cu `qr_code`
-        const [umbrellaResult] = await connection.execute(
-            "SELECT umbrella_number FROM qr_codes WHERE qr_code = ? AND business_id = ?",
-            [qr_code, business_id]
-        );
+        // 1️⃣ Găsim `umbrella_number` asociat cu `qr_code`
+const [umbrellaResult] = await connection.execute(
+    "SELECT umbrella_number FROM qr_codes WHERE qr_code = ? AND business_id = ?",
+    [qr_code, business_id]
+);
 
-        if (umbrellaResult.length === 0) {
-            throw new Error(`⚠️ Nu s-a găsit o umbrelă pentru acest QR Code: ${qr_code}`);
-        }
+if (umbrellaResult.length === 0) {
+    return res.status(400).json({ success: false, message: `⚠️ QR Code invalid: ${qr_code}` });
+}
 
-        const umbrella_number = umbrellaResult[0].umbrella_number;
-        console.log(`🌂 Umbrella Number găsit: ${umbrella_number}`);
+const umbrella_number = umbrellaResult[0].umbrella_number;
+console.log(`🌂 Umbrella Number găsit: ${umbrella_number}`);
 
         // 🔹 2️⃣ Calculăm totalul comenzii și determinăm `type` pentru fiecare produs
         let total_price = 0;
