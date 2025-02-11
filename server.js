@@ -40,7 +40,7 @@ app.use("/dashboard/menu-setup", menuSetupRoutes);
 app.use("/api/place_orders", placeOrderRoutes);  
 
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 
 // 🛠 Afișează toate rutele disponibile în terminal
 console.log("📡 Rute disponibile:");
