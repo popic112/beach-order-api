@@ -3,6 +3,8 @@ const pool = require("./config/db");
 const express = require("express");
 const cors = require("cors");
 const placeOrderRoutes = require("./routes/place_orders"); // 🔥 Importăm ruta pentru plasarea comenzilor
+const ordersRoutes = require("./routes/orders"); // 🔥 Importăm rutele comenzilor
+
 
 const qrRoutes = require("./routes/qrRoutes");
 const menuRoutes = require("./routes/menuRoutes");
@@ -16,6 +18,7 @@ const app = express();
 app.use("/api/session", sessionRoutes);
 app.use(express.json());
 app.use(cors());
+app.use("/api/orders", ordersRoutes); // 🔥 Înregistrăm rutele pentru statusul comenzilor
 
 app.get("/", (req, res) => {
   res.send("Beach Order API Running! 🚀");
