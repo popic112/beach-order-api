@@ -12,7 +12,7 @@ const sessionRoutes = require("./routes/sessionRoutes");
 
 
 const app = express();
-
+ 
 app.use("/api/session", sessionRoutes);
 app.use(express.json());
 app.use(cors());
