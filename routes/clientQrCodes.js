@@ -47,7 +47,7 @@ router.get("/qrcode-to-business", async (req, res) => {
 
       // 3️⃣ Obține meniul pentru acest business
       const [menuItems] = await connection.query(
-        `SELECT id, name, description, price, type, visible 
+        `SELECT id, name, description, price, type, visible , image
          FROM menu 
          WHERE business_id = ? AND visible = 1`,
         [business_id]
